@@ -112,14 +112,17 @@ track_system.new = function(...)
                             local pressed, press_result, press_delay = test_press(note);
                             
                             if pressed then
-                                press_track(local_track_system, session, note_track_index);
-                                
-                                session:debug_any_press();
-                                
                                 if rawget(note, "get_time_to_end") then
                                     -- It's a hold note, do not release it automatically
                                     -- You may want to store information about pressed hold notes for later release
+                                else
+                                    -- It's not a hold note, press it only if the timing is right
+                                    if press_delay >= note_time_target then
+                                        press_track(local_track_system, session, note_track_index);
+                                    end;
                                 end;
+                                
+                                session:debug_any_press();
                             end;
                             
                             if test_release then 
