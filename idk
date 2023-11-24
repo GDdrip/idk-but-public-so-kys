@@ -13,8 +13,10 @@ local Autoplayer = {
     distanceLowerBound = 0.2,
     distanceUpperBound = 0.6,
     delayLowerBound = 0.03,
-    delayUpperBound = 0.04,
-    sliderDebounce = 0.05,
+    delayUpperBound = 0.05,
+    hitWindowLowerbound = 0.1,
+    hitWindowUpperbound = 0.3,
+    sliderDebounce = 0.06,
     random = Random.new(),
     pressedLanes = {},
     heldLanes = {},
@@ -127,11 +129,15 @@ for index, instance in next, workspace:GetDescendants() do
                     if not Autoplayer.pressedLanes[noteLane] and distance <= randomDistance then
                         Autoplayer.pressedLanes[noteLane] = true
 
-                        VirtualInputManager:SendKeyEvent(true, keys[noteLane], false, game)
-                        task.wait(Autoplayer.random:NextNumber(Autoplayer.delayLowerBound, Autoplayer.delayUpperBound))
-                        VirtualInputManager:SendKeyEvent(false, keys[noteLane], false, game)
+                        local hitTime = Autoplayer.random:NextNumber(Autoplayer.hitWindowLowerBound, Autoplayer.hitWindowUpperBound)
+                        
+                        task.spawn(function()
+                            task.wait(hitTime)
+                            VirtualInputManager:SendKeyEvent(false, keys[noteLane], false, game)
+                            Autoplayer.pressedLanes[noteLane] = false
+                        end)
 
-                        Autoplayer.pressedLanes[noteLane] = false
+                        VirtualInputManager:SendKeyEvent(true, keys[noteLane], false, game)
                     end
                 end
             elseif instance.Transparency < 1 and instance.Height > 0.2 and math.floor(instance.CFrame.Y * 10) == Autoplayer.sliderY then
@@ -147,22 +153,18 @@ for index, instance in next, workspace:GetDescendants() do
 
                     if not Autoplayer.heldLanes[noteLane] and distance <= randomDistance then
                         Autoplayer.heldLanes[noteLane] = true
-                        
+
+                        local hitTime = Autoplayer.random:NextNumber(Autoplayer.hitWindowLowerBound, Autoplayer.hitWindowUpperBound)
+
+                        task.spawn(function()
+                            task.wait(hitTime)
+                            VirtualInputManager:SendKeyEvent(false, keys[noteLane], false, game)
+                            Autoplayer.heldLanes[noteLane] = false
+                        end)
+
                         VirtualInputManager:SendKeyEvent(true, keys[noteLane], false, game)
-                        
-                        local noteDistance
 
-                        repeat
-                            noteDistance = (instance.CFrame + instance.CFrame.LookVector * instance.Height / 2).X - lanePosition.X
-
-                            task.wait()
-                        until (Autoplayer.currentLanePositionsIndex > 2 and math.abs(noteDistance) or noteDistance) <= randomDistance
-                        
-                        VirtualInputManager:SendKeyEvent(false, keys[noteLane], false, game)
-                        
                         task.wait(Autoplayer.sliderDebounce)
-                        
-                        Autoplayer.heldLanes[noteLane] = false
                     end
                 end
             end
