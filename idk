@@ -1,4 +1,3 @@
--- this is the lua version of the external autoplayer made by my friend and i (https://github.com/ViperTools/RoBeats-External-Autoplayer)
 
 local keys = shared.keys or {"Q", "W", "O", "P"} -- MAKE THIS YOUR ROBEATS KEYBINDS FROM LEFT TO RIGHT, OR SET IN SHARED.KEYS
 local autoGrabKeys = shared.autoGrabKeys ~= nil and shared.autoGrabKeys or true
