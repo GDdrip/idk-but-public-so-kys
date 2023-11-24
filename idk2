@@ -119,21 +119,22 @@ track_system.new = function(...)
                                     -- It's not a hold note, press it only if the timing is right
                                     if press_delay >= note_time_target then
                                         press_track(local_track_system, session, note_track_index);
+                                        session:debug_any_press();
                                     end;
                                 end;
-                                
-                                session:debug_any_press();
                             end;
                             
                             if test_release then 
                                 local released, release_result, release_delay = test_release(note);
                                 
-                                if released and release_delay >= note_time_target then 
+                                if released then
                                     if rawget(note, "get_time_to_end") then
                                         -- It's a hold note, release it only if the hold time is sufficient
-                                        delay(math.min(release_delay, 0.05), function()
-                                            release_track(local_track_system, session, note_track_index);
-                                        end);
+                                        if release_delay >= note_time_target then
+                                            delay(math.min(release_delay, 0.05), function()
+                                                release_track(local_track_system, session, note_track_index);
+                                            end);
+                                        end;
                                     else
                                         -- It's not a hold note, release it without delay
                                         release_track(local_track_system, session, note_track_index);
