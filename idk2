@@ -1,3 +1,4 @@
+User
 --// variables
 
 local player = game:GetService("Players").LocalPlayer;
@@ -120,25 +121,25 @@ track_system.new = function(...)
                                     if press_delay >= note_time_target then
                                         press_track(local_track_system, session, note_track_index);
                                         session:debug_any_press();
+                                        
+                                        if test_release then
+                                            -- If there is a release function, release the non-hold note after a short delay
+                                            delay(math.min(press_delay, 0.05), function()
+                                                release_track(local_track_system, session, note_track_index);
+                                            end);
+                                        end;
                                     end;
                                 end;
                             end;
                             
-                            if test_release then 
+                            if test_release and rawget(note, "get_time_to_end") then
+                                -- It's a hold note, release it only if the hold time is sufficient
                                 local released, release_result, release_delay = test_release(note);
                                 
-                                if released then
-                                    if rawget(note, "get_time_to_end") then
-                                        -- It's a hold note, release it only if the hold time is sufficient
-                                        if release_delay >= note_time_target then
-                                            delay(math.min(release_delay, 0.05), function()
-                                                release_track(local_track_system, session, note_track_index);
-                                            end);
-                                        end;
-                                    else
-                                        -- It's not a hold note, release it without delay
+                                if released and release_delay >= note_time_target then 
+                                    delay(math.min(release_delay, 0.05), function()
                                         release_track(local_track_system, session, note_track_index);
-                                    end;
+                                    end);
                                 end;
                             end;
                         end;
