@@ -1,3 +1,4 @@
+-- this is the lua version of the external autoplayer made by my friend and i (https://github.com/ViperTools/RoBeats-External-Autoplayer)
 
 local keys = shared.keys or {"Q", "W", "O", "P"} -- MAKE THIS YOUR ROBEATS KEYBINDS FROM LEFT TO RIGHT, OR SET IN SHARED.KEYS
 local autoGrabKeys = shared.autoGrabKeys ~= nil and shared.autoGrabKeys or true
@@ -13,8 +14,6 @@ local Autoplayer = {
     distanceUpperBound = 0.6,
     delayLowerBound = 0.03,
     delayUpperBound = 0.05,
-    hitWindowLowerbound = 0.1,
-    hitWindowUpperbound = 0.3,
     sliderDebounce = 0.06,
     random = Random.new(),
     pressedLanes = {},
@@ -128,15 +127,11 @@ for index, instance in next, workspace:GetDescendants() do
                     if not Autoplayer.pressedLanes[noteLane] and distance <= randomDistance then
                         Autoplayer.pressedLanes[noteLane] = true
 
-                        local hitTime = Autoplayer.random:NextNumber(Autoplayer.hitWindowLowerBound, Autoplayer.hitWindowUpperBound)
-                        
-                        task.spawn(function()
-                            task.wait(hitTime)
-                            VirtualInputManager:SendKeyEvent(false, keys[noteLane], false, game)
-                            Autoplayer.pressedLanes[noteLane] = false
-                        end)
-
                         VirtualInputManager:SendKeyEvent(true, keys[noteLane], false, game)
+                        task.wait(Autoplayer.random:NextNumber(Autoplayer.delayLowerBound, Autoplayer.delayUpperBound))
+                        VirtualInputManager:SendKeyEvent(false, keys[noteLane], false, game)
+
+                        Autoplayer.pressedLanes[noteLane] = false
                     end
                 end
             elseif instance.Transparency < 1 and instance.Height > 0.2 and math.floor(instance.CFrame.Y * 10) == Autoplayer.sliderY then
@@ -152,18 +147,22 @@ for index, instance in next, workspace:GetDescendants() do
 
                     if not Autoplayer.heldLanes[noteLane] and distance <= randomDistance then
                         Autoplayer.heldLanes[noteLane] = true
-
-                        local hitTime = Autoplayer.random:NextNumber(Autoplayer.hitWindowLowerBound, Autoplayer.hitWindowUpperBound)
-
-                        task.spawn(function()
-                            task.wait(hitTime)
-                            VirtualInputManager:SendKeyEvent(false, keys[noteLane], false, game)
-                            Autoplayer.heldLanes[noteLane] = false
-                        end)
-
+                        
                         VirtualInputManager:SendKeyEvent(true, keys[noteLane], false, game)
+                        
+                        local noteDistance
 
+                        repeat
+                            noteDistance = (instance.CFrame + instance.CFrame.LookVector * instance.Height / 2).X - lanePosition.X
+
+                            task.wait()
+                        until (Autoplayer.currentLanePositionsIndex > 2 and math.abs(noteDistance) or noteDistance) <= randomDistance
+                        
+                        VirtualInputManager:SendKeyEvent(false, keys[noteLane], false, game)
+                        
                         task.wait(Autoplayer.sliderDebounce)
+                        
+                        Autoplayer.heldLanes[noteLane] = false
                     end
                 end
             end
